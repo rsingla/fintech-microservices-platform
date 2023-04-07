@@ -21,3 +21,21 @@ Build a file upload service using Gin framework to Disk and S3
 curl -X POST http://localhost:8080/upload \
   -F "file=@/Users/appleboy/test.zip" \
   -H "Content-Type: multipart/form-data"
+
+
+5. Setup S3 bucket and give programmatic access
+
+6. Get AWS SDK for GO
+
+# https://github.com/aws/aws-sdk-go-v2
+# Commands
+    ## go get github.com/aws/aws-sdk-go-v2/aws
+    ## go get github.com/aws/aws-sdk-go-v2/config
+    ## go get github.com/aws/aws-sdk-go-v2/service/s3
+    ## go get github.com/joho/godotenv
+
+# https://aws.github.io/aws-sdk-go-v2/docs/making-requests/
+Reference Doc
+# https://asanchez.dev/blog/amazon-s3-v2-golang/
+
+# 

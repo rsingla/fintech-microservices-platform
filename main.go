@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -19,7 +21,26 @@ func main() {
 
 	r.POST("/upload", fileDiskUpload)
 
+	r.GET("/env", envData)
+
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+}
+
+func envData(c *gin.Context) {
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("Error loading .env file")
+	}
+
+	if os.Getenv("S3_BUCKET") == "" {
+		log.Println("S3 BUCKET seems to be missing")
+		c.String(http.StatusNotFound, fmt.Sprintf(" Environment variable not found!"))
+	}
+
+	s3Bucket := os.Getenv("S3_BUCKET")
+	awsRegion := os.Getenv("AWS_REGION")
+
+	c.String(http.StatusOK, fmt.Sprintf("Env info verification! %s, %s", s3Bucket, awsRegion))
 }
 
 func healthCheck(c *gin.Context) {
