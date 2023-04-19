@@ -7,6 +7,11 @@ import (
 )
 
 func main() {
+	Variable()
+	//setupRouter()
+}
+
+func setupRouter() *gin.Engine {
 	r := gin.Default()
 	r.LoadHTMLGlob("templates/*")
 	r.MaxMultipartMemory = 8 << 20 // 8 MiB
