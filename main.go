@@ -12,12 +12,10 @@ func init() {
 }
 
 func main() {
-	//gojourney.Variable()
-	//age := gojourney.MyAgeCalculator()
 
-	//fmt.Println(age)
+	utils.ConnectDB()
 
-	api()
+	//api()
 }
 
 func api() {

@@ -31,8 +31,19 @@ func GPTCall(c *gin.Context) {
 
 	chatResp := chatCompletion(resp)
 
+	go chatStoreLog(prompt, chatResp)
+
 	c.JSON(http.StatusOK, chatResp.Choices)
 
+}
+
+func chatStoreLog(prompt model.Prompt, chatResp model.ChatCompletion) {
+	chatLog := model.ChatLog{
+		Prompt:         prompt,
+		ChatCompletion: chatResp,
+	}
+
+	chatLog.Save()
 }
 
 func chatCompletion(resp *http.Response) model.ChatCompletion {
@@ -48,6 +59,8 @@ func chatCompletion(resp *http.Response) model.ChatCompletion {
 		fmt.Println("Error:", err)
 	}
 	fmt.Printf("%+v", chatCompletion)
+
+	return chatCompletion
 }
 
 func chatRequest(prompt model.Prompt) (model.APIRequest, string, string) {
