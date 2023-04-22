@@ -12,8 +12,8 @@ import (
 )
 
 func CallAPI(apiRequest model.APIRequest, url string, authToken string) (*http.Response, error) {
-	// Create a context with a 10-second timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	// Create a context with a 30-second timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	reqPayload, err := json.Marshal(apiRequest)

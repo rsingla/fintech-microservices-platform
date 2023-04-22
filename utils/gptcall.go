@@ -21,6 +21,15 @@ func GPTCall(c *gin.Context) {
 		return
 	}
 
+	chatResp := CallNParse(prompt)
+
+	go InvokeChatAndCreateModel(&chatResp)
+
+	c.JSON(http.StatusOK, chatResp.Choices)
+
+}
+
+func CallNParse(prompt model.Prompt) model.ChatCompletion {
 	apiRequest, url, authToken := chatRequest(prompt)
 
 	resp, err := api.CallAPI(apiRequest, url, authToken)
@@ -33,8 +42,7 @@ func GPTCall(c *gin.Context) {
 
 	go chatStoreLog(prompt, chatResp)
 
-	c.JSON(http.StatusOK, chatResp.Choices)
-
+	return chatResp
 }
 
 func chatStoreLog(prompt model.Prompt, chatResp model.ChatCompletion) {

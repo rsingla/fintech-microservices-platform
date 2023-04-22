@@ -13,19 +13,42 @@ func init() {
 
 func main() {
 
-	utils.ConnectDB()
+	//utils.ConnectDB()
 
-	//api()
-}
-
-func api() {
 	r := gin.Default()
 	r.LoadHTMLGlob("templates/*")
 	r.MaxMultipartMemory = 8 << 20 // 8 MiB
 
+	healthCheckApi(r)
+	openAIAPIs(r)
+	api(r)
+
+	r.Run()
+
+}
+
+func blogAPIs(r *gin.Engine) {
+
+	//r.GET("/posts", utils.EnvData)
+
+	//r.GET("/post/:id", utils.SendEmail)
+
+}
+
+func openAIAPIs(r *gin.Engine) {
+
+	r.POST("/openai/chat", utils.GPTCall)
+
+}
+
+func healthCheckApi(r *gin.Engine) {
+
 	r.GET("/", indexPage)
 
 	r.GET("/ping", healthCheck)
+}
+
+func api(r *gin.Engine) {
 
 	r.POST("/upload", utils.FileDiskUpload)
 
@@ -34,10 +57,6 @@ func api() {
 	r.GET("/env", utils.EnvData)
 
 	r.POST("/sendemail", utils.SendEmail)
-
-	r.POST("/openai/chat", utils.GPTCall)
-
-	r.Run()
 
 }
 
