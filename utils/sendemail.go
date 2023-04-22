@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"fmt"
@@ -29,27 +29,41 @@ func SendEmail(c *gin.Context) {
 	fmt.Printf("Received: %#v\n", mail)
 
 	// Send the mail
-	send(mail.To, mail.Subject, mail.Body)
+	resp, err := send(mail.To, mail.Subject, mail.Body)
 
-	// Return a success response
-	c.JSON(200, gin.H{"message": "mail Sent"})
-
-}
-
-func send(to []string, subject string, body string) {
-	log.Println("Sending email..." + subject + " to " + to[0] + " Body ... " + body)
-	// Set up authentication information.
-
-	auth := smtp.PlainAuth("", "username", "password", "mail.smtp2go.com")
-
-	emailContent := "Subject: " + subject + "\r\n\r\n" + body
-
-	// Send the email.
-	err := smtp.SendMail("mail.smtp2go.com:2525", auth, "your-email@email.com", to, []byte(emailContent))
 	if err != nil {
-		fmt.Println(err)
+		// Return an error response if the sending fails
+		c.JSON(500, gin.H{"error": err.Error()})
 		return
 	}
 
-	fmt.Println("Email sent successfully!")
+	// Return a success response
+	if resp != "" {
+		c.JSON(200, gin.H{"message": "mail Sent"})
+	}
+
+}
+
+func send(to []string, subject string, body string) (string, error) {
+	log.Println("Sending email..." + subject + " to " + to[0] + " Body ... " + body)
+
+	errCh := make(chan error)
+
+	go func() {
+		auth := smtp.PlainAuth("", "username", "password", "mail.smtp2go.com")
+		emailContent := "Subject: " + subject + "\r\n\r\n" + body
+		errCh <- smtp.SendMail("mail.smtp2go.com:2525", auth, "your-email@email.com", to, []byte(emailContent))
+
+	}()
+
+	err := <-errCh
+	fmt.Println(err)
+
+	// Send the email.
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+
+	return "Email sent successfully!", nil
 }

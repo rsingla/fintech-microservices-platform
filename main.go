@@ -4,14 +4,19 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rsingla/FileService/utils"
 )
 
 func main() {
-	Variable()
-	//setupRouter()
+	//gojourney.Variable()
+	//age := gojourney.MyAgeCalculator()
+
+	//fmt.Println(age)
+
+	api()
 }
 
-func setupRouter() *gin.Engine {
+func api() {
 	r := gin.Default()
 	r.LoadHTMLGlob("templates/*")
 	r.MaxMultipartMemory = 8 << 20 // 8 MiB
@@ -20,15 +25,16 @@ func setupRouter() *gin.Engine {
 
 	r.GET("/ping", healthCheck)
 
-	r.POST("/upload", fileDiskUpload)
+	r.POST("/upload", utils.FileDiskUpload)
 
-	r.POST("/upload/s3", uploadS3)
+	r.POST("/upload/s3", utils.UploadS3)
 
-	r.GET("/env", envData)
+	r.GET("/env", utils.EnvData)
 
-	r.POST("/sendemail", SendEmail)
+	r.POST("/sendemail", utils.SendEmail)
 
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+
 }
 
 func healthCheck(c *gin.Context) {
@@ -39,6 +45,6 @@ func healthCheck(c *gin.Context) {
 
 func indexPage(c *gin.Context) {
 	c.HTML(http.StatusOK, "index.html", gin.H{
-		"title": "Zapitel file uploader service",
+		"title": "Rajeev Singla file uploader service",
 	})
 }

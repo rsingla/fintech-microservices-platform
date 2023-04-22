@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func uploadS3(c *gin.Context) {
+func UploadS3(c *gin.Context) {
 
 	// single file
 	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion("us-west-2"))

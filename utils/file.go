@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func fileDiskUpload(c *gin.Context) {
+func FileDiskUpload(c *gin.Context) {
 	// single file
 	file, err := c.FormFile("file")
 	if err != nil {
@@ -27,7 +27,7 @@ func fileDiskUpload(c *gin.Context) {
 	c.String(http.StatusOK, fmt.Sprintf("'%s' uploaded!", file.Filename))
 }
 
-func envData(c *gin.Context) {
+func EnvData(c *gin.Context) {
 	err := godotenv.Load()
 	if err != nil {
 		log.Println("Error loading .env file")
