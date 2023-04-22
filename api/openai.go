@@ -48,8 +48,6 @@ func CallAPI(apiRequest model.APIRequest, url string, authToken string) (*http.R
 	select {
 	case resp := <-respChan:
 		fmt.Println("Response received!")
-		// Do something with the response
-		_ = resp.Body.Close()
 		return resp, nil
 	case err := <-errChan:
 		return nil, err

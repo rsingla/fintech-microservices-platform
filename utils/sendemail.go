@@ -6,17 +6,12 @@ import (
 	"net/smtp"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rsingla/FileService/model"
 )
-
-type Mail struct {
-	To      []string `json:"to"`
-	Subject string   `json:"subject"`
-	Body    string   `json:"body"`
-}
 
 func SendEmail(c *gin.Context) {
 
-	var mail Mail
+	var mail model.Mail
 
 	// Bind the JSON body to the person struct
 	if err := c.BindJSON(&mail); err != nil {

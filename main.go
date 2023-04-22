@@ -37,6 +37,8 @@ func api() {
 
 	r.POST("/sendemail", utils.SendEmail)
 
+	r.POST("/openai/chat", utils.GPTCall)
+
 	r.Run()
 
 }
