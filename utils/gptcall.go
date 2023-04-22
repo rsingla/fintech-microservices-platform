@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -15,16 +16,41 @@ func GPTCall(c *gin.Context) {
 
 	var prompt model.Prompt
 
-	// Bind the JSON body to the person struct
 	if err := c.BindJSON(&prompt); err != nil {
-		// Return an error response if the binding fails
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Print the received person struct
-	fmt.Printf("Received: %#v\n", prompt)
+	apiRequest, url, authToken := chatRequest(prompt)
 
+	resp, err := api.CallAPI(apiRequest, url, authToken)
+
+	if err != nil {
+		panic(err)
+	}
+
+	chatResp := chatCompletion(resp)
+
+	c.JSON(http.StatusOK, chatResp.Choices)
+
+}
+
+func chatCompletion(resp *http.Response) model.ChatCompletion {
+
+	fmt.Println("Response status code:", resp.StatusCode)
+	buf := new(bytes.Buffer)
+	_, _ = buf.ReadFrom(resp.Body)
+	fmt.Println("Response body:", buf.String())
+
+	var chatCompletion model.ChatCompletion
+	err := json.Unmarshal([]byte(buf.Bytes()), &chatCompletion)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	fmt.Printf("%+v", chatCompletion)
+}
+
+func chatRequest(prompt model.Prompt) (model.APIRequest, string, string) {
 	url := os.Getenv("OPENAI_URL")
 	authToken := os.Getenv("OPENAI_API_KEY")
 	gptModel := os.Getenv("DEFAULT_GPT3_MODEL")
@@ -44,17 +70,5 @@ func GPTCall(c *gin.Context) {
 		PresencePenalty:  0.1,
 	}
 
-	resp, err := api.CallAPI(apiRequest, url, authToken)
-
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println("Response status code:", resp.StatusCode)
-	buf := new(bytes.Buffer)
-	_, _ = buf.ReadFrom(resp.Body)
-	fmt.Println("Response body:", buf.String())
-
-	c.JSON(http.StatusOK, buf.String())
-
+	return apiRequest, url, authToken
 }
