@@ -7,6 +7,10 @@ import (
 	"github.com/rsingla/FileService/utils"
 )
 
+func init() {
+	utils.LoadEnv()
+}
+
 func main() {
 	//gojourney.Variable()
 	//age := gojourney.MyAgeCalculator()
@@ -33,7 +37,7 @@ func api() {
 
 	r.POST("/sendemail", utils.SendEmail)
 
-	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+	r.Run()
 
 }
 
