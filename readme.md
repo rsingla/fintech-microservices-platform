@@ -16,7 +16,9 @@ go get -u github.com/gin-gonic/gin
 3. Add the following code to main.go
 
 https://pkg.go.dev/github.com/gin-gonic/gin#readme-running-gin
+
 https://gin-gonic.com/docs/examples/html-rendering/
+
 https://gin-gonic.com/docs/examples/upload-file/single-file/
 
 4. Calling via API
@@ -31,13 +33,17 @@ curl -X POST http://localhost:3001/upload \
 6. Get AWS SDK for GO
 
 https://github.com/aws/aws-sdk-go-v2
+
 Commands
-    ## go get github.com/aws/aws-sdk-go-v2/aws
-    ## go get github.com/aws/aws-sdk-go-v2/config
-    ## go get github.com/aws/aws-sdk-go-v2/service/s3
-    ## go get github.com/joho/godotenv
-    ## go get github.com/aws/aws-sdk-go-v2/feature/s3/manager
+
+    go get github.com/aws/aws-sdk-go-v2/aws
+    go get github.com/aws/aws-sdk-go-v2/config
+    go get github.com/aws/aws-sdk-go-v2/service/s3
+    go get github.com/joho/godotenv
+    go get github.com/aws/aws-sdk-go-v2/feature/s3/manager
 
 https://aws.github.io/aws-sdk-go-v2/docs/making-requests/
+
 Reference Doc
+
 https://asanchez.dev/blog/amazon-s3-v2-golang/
