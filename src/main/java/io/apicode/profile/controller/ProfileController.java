@@ -1,114 +1,51 @@
 package io.apicode.profile.controller;
 
-import java.util.concurrent.ExecutionException;
+import io.apicode.profile.exception.ProfileNotFoundException;
+import io.apicode.profile.model.Profile;
+import io.apicode.profile.service.UserService;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.logging.Logger;
 
-import javax.validation.Valid;
-import javax.validation.Validator;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-
-import io.apicode.profile.model.APIException;
-import io.apicode.profile.model.Profile;
-import io.apicode.profile.model.Util;
-import io.apicode.profile.service.UserService;
-
 @RestController
+@RequestMapping("/profiles")
 public class ProfileController {
 
-	@Autowired
-	UserService userService;
+	private final Logger log = Logger.getLogger("Profile Controller");
 
-	@Autowired
-	Validator validator;
+	private final UserService userService;
 
-	Logger log = Logger.getLogger("Profile Controller");
-
-	@GetMapping(path = "profile/{id}", produces = { "application/json" })
-	public @ResponseBody Profile getProfileDetails(@PathVariable String id) throws InterruptedException, ExecutionException {
-		Profile profile = userService.getProfileDetails(id);
-		return profile;
+	public ProfileController(UserService userService) {
+		this.userService = userService;
 	}
 
-	@PostMapping(path = "profile", produces = { "application/json" })
-	public @ResponseBody Profile createProfile(@Valid @RequestBody Profile profile)
-			throws InterruptedException, ExecutionException, APIException {
-
-		// Validate Email
-
-		String id = userService.getByEmail(profile.getEmail());
-
-		if (id != null) {
-			throw new APIException("User already Exists " + id);
-		}
-
-		Profile profileResponse = userService.saveProfileDetails(profile);
-		return profileResponse;
-
+	@GetMapping(path = "/{id}", produces = { "application/json" })
+	public ResponseEntity<Profile> getProfileDetails(@PathVariable String id) {
+		Profile profile = userService.getProfileDetails(id)
+				.orElseThrow(() -> new ProfileNotFoundException("Profile not found with id: " + id));
+		return ResponseEntity.ok(profile);
 	}
 
-	@PutMapping(path = "profile/{id}", produces = { "application/json" })
-	public @ResponseBody Profile updateProfile(@Valid @RequestBody Profile profile, @PathVariable String id)
-			throws InterruptedException, ExecutionException, APIException {
-
-		// Existing DB Profile
-		Profile profileDB = userService.getProfileDetails(id);
-
-		if (profileDB == null) {
-			throw new APIException("User cannot be updated as it doesnt exists, Please insert");
-		}
-
-		String idWithEmail = userService.getByEmail(profile.getEmail());
-
-		if (!idWithEmail.equalsIgnoreCase(id)) {
-			throw new APIException("Profile already exist and doesnt match the update info  " + id);
-		}
-
-		Profile profileResponse = userService.updateProfileDetails(profile, id);
-		return profileResponse;
-
+	@PostMapping(produces = { "application/json" })
+	public Profile createProfile(@Valid @RequestBody Profile profile) {
+		return userService.createNewProfile(profile);
 	}
 
-	@PatchMapping(path = "profile/{id}", produces = { "application/json" })
-	public @ResponseBody Profile upsertProfile(@RequestBody Profile profile, @PathVariable String id)
-			throws InterruptedException, ExecutionException, APIException {
-
-		// Existing DB Profile
-		Profile profileDB = userService.getProfileDetails(id);
-
-		if (profileDB == null) {
-			throw new APIException("User cannot be updated as it doesnt exists, Please insert");
-		}
-
-		if (profile.getEmail() != null) {
-			String idWithEmail = userService.getByEmail(profile.getEmail());
-
-			if (!idWithEmail.equalsIgnoreCase(id)) {
-				throw new APIException("Profile already exist and doesnt match the update info  " + id);
-			}
-		}
-
-		// Merge the Input Profile with DB Profile
-		profile = Util.merge(profile, profileDB);
-
-		Profile profileResponse = userService.updateProfileDetails(profile, id);
-		return profileResponse;
-
+	@PutMapping(path = "/{id}", produces = { "application/json" })
+	public Profile updateProfile(@Valid @RequestBody Profile profile, @PathVariable String id) {
+		return userService.updateExistingProfile(id, profile);
 	}
 
-	@DeleteMapping(path = "profile/{id}", produces = { "application/json" })
-	public @ResponseBody String deleteProfileById(@PathVariable String id) throws InterruptedException, ExecutionException {
-		String info = userService.deleteProfile(id);
-		return info;
+	@PatchMapping(path = "/{id}", produces = { "application/json" })
+	public Profile upsertProfile(@RequestBody Profile profile, @PathVariable String id) {
+		return userService.patchUpdateProfile(id, profile);
+	}
+
+	@DeleteMapping(path = "/{id}", produces = { "application/json" })
+	public String deleteProfileById(@PathVariable String id) {
+		return userService.deleteProfile(id);
 	}
 
 }

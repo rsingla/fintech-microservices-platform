@@ -1,0 +1,16 @@
+io/apicode/profile/model/Profile.class
+io/apicode/profile/ProfileServiceApplication.class
+io/apicode/profile/controller/ProfileController.class
+io/apicode/profile/repository/FirestoreProfileRepository.class
+io/apicode/profile/repository/ProfileRepository.class
+io/apicode/profile/model/Health.class
+io/apicode/profile/model/ErrorDetails.class
+io/apicode/profile/exception/DuplicateProfileException.class
+io/apicode/profile/service/UserService.class
+io/apicode/profile/exception/GlobalExceptionHandler.class
+io/apicode/profile/controller/HealthController.class
+io/apicode/profile/model/APIException.class
+io/apicode/profile/exception/ProfileNotFoundException.class
+io/apicode/profile/exception/DataAccessException.class
+io/apicode/profile/FirestoreConfiguration.class
+io/apicode/profile/model/Address.class
