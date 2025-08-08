@@ -1,115 +1,118 @@
 package io.apicode.profile.service;
 
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Logger;
-
+import io.apicode.profile.exception.DataAccessException;
+import io.apicode.profile.exception.DuplicateProfileException;
+import io.apicode.profile.exception.ProfileNotFoundException;
+import io.apicode.profile.model.Profile;
+import io.apicode.profile.repository.ProfileRepository;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.stereotype.Service;
 
-import com.google.api.core.ApiFuture;
-import com.google.cloud.firestore.CollectionReference;
-import com.google.cloud.firestore.DocumentReference;
-import com.google.cloud.firestore.DocumentSnapshot;
-import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.QueryDocumentSnapshot;
-import com.google.cloud.firestore.QuerySnapshot;
-import com.google.cloud.firestore.WriteResult;
-import com.google.firebase.cloud.FirestoreClient;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
-import io.apicode.profile.model.Profile;
-
-//CRUD operations
 @Service
 public class UserService {
 
-	Logger log = Logger.getLogger("Profile Service");
+    private final ProfileRepository profileRepository;
 
-	public static final String COL_NAME = "profiles";
+    public UserService(ProfileRepository profileRepository) {
+        this.profileRepository = profileRepository;
+    }
 
-	public Profile saveProfileDetails(Profile profile) throws InterruptedException, ExecutionException {
-		
-		String id = getID();
-		ApiFuture<WriteResult> collectionsApiFuture = InitId(id).set(profile);
+    public Profile createNewProfile(Profile profile) {
+        getByEmail(profile.getEmail()).ifPresent(id -> {
+            throw new DuplicateProfileException("Profile with email " + profile.getEmail() + " already exists.");
+        });
+        return saveProfileDetails(profile);
+    }
 
-		// Get the Updated time
-		String time = collectionsApiFuture.get().getUpdateTime().toString();
+    public Profile updateExistingProfile(String id, Profile profile) {
+        Profile existingProfile = getProfileDetails(id)
+                .orElseThrow(() -> new ProfileNotFoundException("Profile not found with id: " + id));
 
-		// Set the information before returning
-		profile.setId(id);
-		profile.setTimeUpdated(time);
+        getByEmail(profile.getEmail()).ifPresent(existingId -> {
+            if (!existingId.equals(id)) {
+                throw new DuplicateProfileException("Email " + profile.getEmail() + " is already in use by another profile.");
+            }
+        });
 
-		return profile;
-	}
+        return updateProfileDetails(profile, id);
+    }
 
-	public Profile getProfileDetails(String id) throws InterruptedException, ExecutionException {
-		ApiFuture<DocumentSnapshot> future = InitId(id).get();
+    public Profile patchUpdateProfile(String id, Profile profile) {
+        Profile existingProfile = getProfileDetails(id)
+                .orElseThrow(() -> new ProfileNotFoundException("Profile not found with id: " + id));
 
-		DocumentSnapshot document = future.get();
+        if (profile.getEmail() != null) {
+            getByEmail(profile.getEmail()).ifPresent(existingId -> {
+                if (!existingId.equals(id)) {
+                    throw new DuplicateProfileException("Email " + profile.getEmail() + " is already in use by another profile.");
+                }
+            });
+        }
 
-		Profile profile = null;
+        BeanUtils.copyProperties(profile, existingProfile, getNullPropertyNames(profile));
+        return updateProfileDetails(existingProfile, id);
+    }
 
-		if (document.exists()) {
-			profile = document.toObject(Profile.class);
-			return profile;
-		} else {
-			return null;
-		}
-	}
+    private static String[] getNullPropertyNames(Object source) {
+        final BeanWrapper src = new BeanWrapperImpl(source);
+        java.beans.PropertyDescriptor[] pds = src.getPropertyDescriptors();
 
-	public Profile updateProfileDetails(Profile profile, String id) throws InterruptedException, ExecutionException {
-		ApiFuture<WriteResult> collectionsApiFuture = InitId(id).set(profile);
-		// Get the Updated time
-		String time = collectionsApiFuture.get().getUpdateTime().toString();
+        Set<String> emptyNames = new HashSet<>();
+        for (java.beans.PropertyDescriptor pd : pds) {
+            Object srcValue = src.getPropertyValue(pd.getName());
+            if (srcValue == null) emptyNames.add(pd.getName());
+        }
+        String[] result = new String[emptyNames.size()];
+        return emptyNames.toArray(result);
+    }
 
-		// Set the information before returning
-		profile.setId(id);
-		profile.setTimeUpdated(time);
-		
-		return profile;
 
-	}
+    public Profile saveProfileDetails(Profile profile) {
+        try {
+            return profileRepository.saveProfile(profile);
+        } catch (InterruptedException | ExecutionException e) {
+            throw new DataAccessException("Error while saving profile", e);
+        }
+    }
 
-	/**
-	 * @Profile - Retrieve info using email 
-	 * 
-	 * @param email
-	 * @return
-	 * @throws InterruptedException
-	 * @throws ExecutionException
-	 */
-	public String getByEmail(String email) throws InterruptedException, ExecutionException {
-		ApiFuture<QuerySnapshot> future = InitFireStore().whereEqualTo("email", email).get();
-		// future.get() blocks on response
-		List<QueryDocumentSnapshot> documents = future.get().getDocuments();
-		String id = null;
-		for (DocumentSnapshot document : documents) {
-			id = document.getId();
-			log.info(document.toObject(Profile.class).toString());
-		}
-		return id;
-	}
+    public Optional<Profile> getProfileDetails(String id) {
+        try {
+            return profileRepository.findProfileById(id);
+        } catch (InterruptedException | ExecutionException e) {
+            throw new DataAccessException("Error while fetching profile by id: " + id, e);
+        }
+    }
 
-	public String deleteProfile(String id) {
-		InitId(id).delete();
-		return "Document with Profile ID " + id + " has been deleted";
-	}
+    public Profile updateProfileDetails(Profile profile, String id) {
+        try {
+            return profileRepository.updateProfile(id, profile);
+        } catch (InterruptedException | ExecutionException e) {
+            throw new DataAccessException("Error while updating profile: " + id, e);
+        }
+    }
 
-	private String getID() {
-		UUID uuid = UUID.randomUUID();
-		return uuid.toString();
-	}
+    public Optional<String> getByEmail(String email) {
+        try {
+            return profileRepository.findProfileByEmail(email);
+        } catch (InterruptedException | ExecutionException e) {
+            throw new DataAccessException("Error while fetching profile by email: " + email, e);
+        }
+    }
 
-	private CollectionReference InitFireStore() {
-		Firestore dbFirestore = FirestoreClient.getFirestore();
-		CollectionReference collectionReference = dbFirestore.collection(COL_NAME);
-		return collectionReference;
-	}
-
-	private DocumentReference InitId(String id) {
-		Firestore dbFirestore = FirestoreClient.getFirestore();
-		DocumentReference documentReference = dbFirestore.collection(COL_NAME).document(id);
-		return documentReference;
-	}
-
+    public String deleteProfile(String id) {
+        getProfileDetails(id).orElseThrow(() -> new ProfileNotFoundException("Profile not found with id: " + id));
+        try {
+            profileRepository.deleteProfileById(id);
+            return "Document with Profile ID " + id + " has been deleted";
+        } catch (InterruptedException | ExecutionException e) {
+            throw new DataAccessException("Error while deleting profile: " + id, e);
+        }
+    }
 }
