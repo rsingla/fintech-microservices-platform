@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: banking-service
+  threads:
+    virtual:
+      enabled: true
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/fintech}
+    username: ${SPRING_DATASOURCE_USERNAME:fintech}
+    password: ${SPRING_DATASOURCE_PASSWORD:fintech}
+  flyway:
+    enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+server:
+  port: ${SERVER_PORT:8082}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+
+springdoc:
+  swagger-ui:
+    path: /docs
+
+showcase:
+  public-base-url: ${SHOWCASE_PUBLIC_BASE_URL:https://bankservice.apicode.io}
+  repository-url: ${SHOWCASE_REPOSITORY_URL:https://github.com/rsingla/fintech-microservices-platform}
+  website-url: ${SHOWCASE_WEBSITE_URL:https://apicode.io}

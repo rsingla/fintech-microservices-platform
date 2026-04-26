@@ -1,0 +1,7 @@
+* text=auto eol=lf
+*.bat text eol=crlf
+*.md text
+*.java text
+*.xml text
+*.yml text
+*.yaml text

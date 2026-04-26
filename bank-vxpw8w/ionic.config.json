@@ -1,8 +1,0 @@
-{
-  "name": "Bank",
-  "integrations": {
-    "capacitor": {}
-  },
-  "type": "react-vite",
-  "id": "ed541fee"
-}

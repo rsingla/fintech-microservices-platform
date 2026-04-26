@@ -1,0 +1,42 @@
+# Build output
+target/
+build/
+out/
+.m2/
+*.class
+*.jar
+*.war
+*.ear
+
+# Runtime and logs
+logs/
+*.log
+*.pid
+
+# Local environment
+.env
+.env.*
+!.env.example
+!.env.aws.example
+.banking-image-uri
+application-local.yml
+*-service-account*.json
+*firebase*.json
+
+# IDE
+.idea/
+.vscode/
+*.iml
+.classpath
+.project
+.settings/
+
+# OS
+.DS_Store
+
+# Node/Python/Go artifacts kept out of this Java showcase
+node_modules/
+dist/
+__pycache__/
+*.pyc
+coverage/
