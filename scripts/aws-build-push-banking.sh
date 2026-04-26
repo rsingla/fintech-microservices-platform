@@ -17,6 +17,11 @@ AWS_REGION="${AWS_REGION:-us-east-1}"
 AWS_PROFILE="${AWS_PROFILE:-default}"
 AWS_ECR_REPOSITORY="${AWS_ECR_REPOSITORY:-banking-service}"
 IMAGE_TAG="${IMAGE_TAG:-latest}"
+export DOCKER_CONFIG="${DOCKER_CONFIG:-$ROOT_DIR/.docker-auth}"
+mkdir -p "$DOCKER_CONFIG"
+if [[ ! -f "$DOCKER_CONFIG/config.json" ]]; then
+  printf '{"auths":{}}\n' > "$DOCKER_CONFIG/config.json"
+fi
 
 ACCOUNT_ID="$(aws sts get-caller-identity --profile "$AWS_PROFILE" --query Account --output text)"
 ECR_REGISTRY="$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
