@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"  # FastAPI
+      - "8501:8501"  # Streamlit
+    environment:
+      - MONGO_URI=${MONGO_URI}
+      - MONGO_DB_NAME=${MONGO_DB_NAME}
+      - MONGO_COLLECTION_NAME=${MONGO_COLLECTION_NAME}
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - STREAMLIT_PORT=8501
+    volumes:
+      - .:/app
+    networks:
+      - campaign_network
+
+networks:
+  campaign_network:
+    driver: bridge 
