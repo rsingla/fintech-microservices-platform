@@ -1,0 +1,16 @@
+# Copy to application-local.properties or set via environment variables.
+# Do NOT commit files containing real credentials.
+
+# MongoDB Atlas
+spring.data.mongodb.uri=${SPRING_DATA_MONGODB_URI}
+
+# Target API
+api.target.key.value=${API_TARGET_KEY_VALUE}
+api.target.id.type=TCIN
+
+# i18n
+message.source.basename=i18n/messages
+message.source.use.code.as.default.message=true
+
+# Spring
+spring.profiles.active=test
