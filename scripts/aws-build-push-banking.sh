@@ -39,17 +39,17 @@ aws ecr create-repository \
   --encryption-configuration encryptionType=AES256 >/dev/null
 
 aws ecr get-login-password --profile "$AWS_PROFILE" --region "$AWS_REGION" \
-  | docker login --username AWS --password-stdin "$ECR_REGISTRY"
+  | docker --config "$DOCKER_CONFIG" login --username AWS --password-stdin "$ECR_REGISTRY"
 
 cd "$ROOT_DIR"
-docker buildx build \
+docker --config "$DOCKER_CONFIG" buildx build \
   --platform linux/arm64 \
   -f services/banking-service/Dockerfile \
   -t "$IMAGE_URI" \
   --load \
   .
 
-docker push "$IMAGE_URI"
+docker --config "$DOCKER_CONFIG" push "$IMAGE_URI"
 
 echo "$IMAGE_URI" > "$ROOT_DIR/.banking-image-uri"
 echo "Pushed $IMAGE_URI"
